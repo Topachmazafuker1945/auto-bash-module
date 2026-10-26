@@ -47,54 +47,68 @@ task_2_network() {
 source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
+
 auto ens3
 iface ens3 inet dhcp
+
 auto ens4
 iface ens4 inet static
-    address 172.16.1.1/28
+address 172.16.1.1/28
+
 auto ens5
 iface ens5 inet static
-    address 172.16.2.1/28
+address 172.16.2.1/28
 EOF
     elif [ "$ROLE" == "HQ-RTR" ]; then
         hostnamectl set-hostname hq-rtr.au-team.irpo
         cat << 'EOF' > /etc/network/interfaces
 source /etc/network/interfaces.d/*
+
 auto lo
 iface lo inet loopback
+
 auto ens3
 iface ens3 inet static
-    address 172.16.1.2/28
-    gateway 172.16.1.1
+address 172.16.1.2/28
+gateway 172.16.1.1
+
 auto ens4
 iface ens4 inet static
-    address 192.168.100.1/27
+address 192.168.100.1/27
+
 auto ens5
 iface ens5 inet static
-    address 192.168.200.1/28
+address 192.168.200.1/28
+
 auto ens6
 iface ens6 inet static
-    address 192.168.99.1/29
+address 192.168.99.1/29
 EOF
     elif [ "$ROLE" == "HQ-SRV" ]; then
         hostnamectl set-hostname hq-srv.au-team.irpo
         cat << 'EOF' > /etc/network/interfaces
 source /etc/network/interfaces.d/*
+
 auto lo
 iface lo inet loopback
+
 auto ens3
 iface ens3 inet static
-    address 192.168.100.2/27
-    gateway 192.168.100.1
+address 192.168.100.2/27
+gateway 192.168.100.1
+
 EOF
     elif [ "$ROLE" == "HQ-CLI" ]; then
         hostnamectl set-hostname hq-cli.au-team.irpo
         cat << 'EOF' > /etc/network/interfaces
 source /etc/network/interfaces.d/*
+
 auto lo
 iface lo inet loopback
+
 auto ens3
 iface ens3 inet dhcp
+
 EOF
     elif [ "$ROLE" == "BR-RTR" ]; then
         hostnamectl set-hostname br-rtr.au-team.irpo
@@ -104,8 +118,8 @@ auto lo
 iface lo inet loopback
 auto ens3
 iface ens3 inet static
-    address 172.16.2.2/28
-    gateway 172.16.2.1
+address 172.16.2.2/28
+gateway 172.16.2.1
 auto ens4
 iface ens4 inet static
     address 172.16.10.1/30
@@ -114,12 +128,15 @@ EOF
         hostnamectl set-hostname br-fw.au-team.irpo
         cat << 'EOF' > /etc/network/interfaces
 source /etc/network/interfaces.d/*
+
 auto lo
 iface lo inet loopback
+
 auto ens3
 iface ens3 inet static
-    address 172.16.10.2/30
-    gateway 172.16.10.1
+address 172.16.10.2/30
+gateway 172.16.10.1
+
 auto ens4
 iface ens4 inet static
     address 172.16.20.1/28
@@ -128,12 +145,14 @@ EOF
         hostnamectl set-hostname br-srv.au-team.irpo
         cat << 'EOF' > /etc/network/interfaces
 source /etc/network/interfaces.d/*
+
 auto lo
 iface lo inet loopback
+
 auto ens3
 iface ens3 inet static
-    address 172.16.20.2/28
-    gateway 172.16.20.1
+address 172.16.20.2/28
+gateway 172.16.20.1
 EOF
     fi
     echo "  -> Сеть настроена. Рекомендуется перезагрузить networking: systemctl restart networking"
@@ -215,19 +234,19 @@ task_6_gre() {
         cat << 'EOF' >> /etc/network/interfaces
 auto gre0
 iface gre0 inet static
-    address 10.10.10.1/30
-    pre-up ip tunnel add gre0 mode gre local 172.16.1.2 remote 172.16.2.2 ttl 64
-    post-up ip link set gre0 up
-    post-down ip tunnel del gre0
+address 10.10.10.1/30
+pre-up ip tunnel add gre0 mode gre local 172.16.1.2 remote 172.16.2.2 ttl 64
+post-up ip link set gre0 up
+post-down ip tunnel del gre0
 EOF
     elif [ "$ROLE" == "BR-RTR" ]; then
         cat << 'EOF' >> /etc/network/interfaces
 auto gre0
 iface gre0 inet static
-    address 10.10.10.2/30
-    pre-up ip tunnel add gre0 mode gre local 172.16.2.2 remote 172.16.1.2 ttl 64
-    post-up ip link set gre0 up
-    post-down ip tunnel del gre0
+address 10.10.10.2/30
+pre-up ip tunnel add gre0 mode gre local 172.16.2.2 remote 172.16.1.2 ttl 64
+post-up ip link set gre0 up
+post-down ip tunnel del gre0
 EOF
     else
         echo "  -> Не для этого устройства."; return
@@ -272,8 +291,8 @@ default-lease-time 600;
 max-lease-time 7200;
 authoritative;
 subnet 192.168.200.0 netmask 255.255.255.240 {
-    range 192.168.200.2 192.168.200.14;
-    option routers 192.168.200.1;
+range 192.168.200.2 192.168.200.14;
+option routers 192.168.200.1;
 }
 EOF
     systemctl restart isc-dhcp-server
@@ -340,9 +359,9 @@ while true; do
         "11. Перезагрузка (reboot)" \
         "Выход"; do
         case $TASK in
-            "1. Базовая настройка (репы, время, форвардинг)" ) task_1_base; break;;
-            "2. Настройка сети (IP, интерфейсы)" ) task_2_network; break;;
-            "3. Создание пользователей" ) task_3_users; break;;
+            "1. Базовая настройка (репы, время, форвардинг) (Для HQ/BR-RTR, BR-FW и ISP)" ) task_1_base; break;;
+            "2. Настройка сети (IP, интерфейсы)(Для всех)" ) task_2_network; break;;
+            "3. Создание пользователей (HQ-RTR и BR-RTR, HQ-SRV и BR-SRV)" ) task_3_users; break;;
             "4. Настройка NAT (nftables)" ) task_4_nat; break;;
             "4. Настройка VLAN (только HQ-RTR)" ) task_4_vlan; break;;
             "5. Настройка SSH (только SRV)" ) task_5_ssh; break;;
